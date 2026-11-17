@@ -1,0 +1,52 @@
+classDiagram
+direction LR
+class CheckHandler {
+  <<abstract, Handler>>
+  -CheckHandler _next
+  +string Name*
+  +SetNext(CheckHandler next) CheckHandler
+  +Handle(TripRequest request) CheckResult
+  #Validate(TripRequest request)* string
+}
+class LicenseCheck { <<Concrete Handler>> }
+class ExperienceCheck {
+  <<Concrete Handler>>
+  -int _minYears
+}
+class AgeCheck {
+  <<Concrete Handler>>
+  -int _minAge
+}
+class DebtCheck { <<Concrete Handler>> }
+class FundsCheck { <<Concrete Handler>> }
+class BlockCheck { <<Concrete Handler>> }
+class TripAdmissionService {
+  <<Client>>
+  -Dictionary _chains
+  +SetChain(VehicleCategory category, CheckHandler[] handlers) void
+  +Admit(TripRequest request) CheckResult
+}
+class TripRequest {
+  <<Request>>
+  +Client Client
+  +Vehicle Vehicle
+  +decimal Deposit
+}
+class CheckResult {
+  +bool Passed
+  +string Reason
+  +string StoppedBy
+}
+CheckHandler "1" --> "0..1" CheckHandler : _next
+CheckHandler <|-- LicenseCheck
+CheckHandler <|-- ExperienceCheck
+CheckHandler <|-- AgeCheck
+CheckHandler <|-- DebtCheck
+CheckHandler <|-- FundsCheck
+CheckHandler <|-- BlockCheck
+TripAdmissionService "1" o-- "*" CheckHandler : першу ланку кожного ланцюга
+TripAdmissionService ..> TripRequest : uses
+CheckHandler ..> TripRequest : uses
+CheckHandler ..> CheckResult : returns
+note for TripAdmissionService "Склад і порядок ланок задається під час виконання окремо для кожної категорії авто"
+note for CheckHandler "Ланка або зупиняє з причиною, або передає далі"

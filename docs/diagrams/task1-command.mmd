@@ -1,0 +1,57 @@
+classDiagram
+direction LR
+class ICarCommand {
+  <<interface, Command>>
+  +RemoteCar Target
+  +string Sender
+  +string Name
+  +Execute() void
+  +Undo() void
+}
+class CarCommand {
+  <<abstract>>
+  +RemoteCar Target
+  +string Sender
+  +string Name*
+  +Execute()* void
+  +Undo()* void
+}
+class OpenDoorsCommand { <<Concrete Command>> }
+class CloseDoorsCommand { <<Concrete Command>> }
+class AlarmCommand { <<Concrete Command>> }
+class BlockEngineCommand { <<Concrete Command>> }
+class RemoteCar {
+  <<Receiver>>
+  +string Plate
+  +bool IsOnline
+  +bool DoorsLocked
+  +bool AlarmOn
+  +bool EngineBlocked
+  +SetConnection(bool online) void
+  +LockDoors() void
+  +UnlockDoors() void
+  +SetAlarm(bool on) void
+  +BlockEngine() void
+  +UnblockEngine() void
+}
+class CommandCenter {
+  <<Invoker>>
+  -Stack _history
+  -Dictionary _pending
+  -List~string~ _journal
+  +IReadOnlyList~string~ Journal
+  +Send(ICarCommand command) void
+  +SetConnection(RemoteCar car, bool online) void
+  +UndoLast() void
+  +PrintJournal() void
+  -Run(ICarCommand command) void
+}
+ICarCommand <|.. CarCommand
+CarCommand <|-- OpenDoorsCommand
+CarCommand <|-- CloseDoorsCommand
+CarCommand <|-- AlarmCommand
+CarCommand <|-- BlockEngineCommand
+CarCommand "*" --> "1" RemoteCar : Target
+CommandCenter "1" o-- "*" ICarCommand : _history, _pending
+note for CommandCenter "Не знає, що робить команда: виконує, ставить у чергу, скасовує, веде журнал"
+note for RemoteCar "Вся логіка дії тут; команда лише викликає її"
